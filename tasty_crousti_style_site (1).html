@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crousty Tenders - Commander en ligne</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Poppins',sans-serif;background:#0a0a0a;color:#fff}
+
+    nav{position:fixed;width:100%;top:0;background:#000;padding:15px 8%;display:flex;justify-content:space-between;align-items:center;z-index:1000;border-bottom:1px solid #222}
+    .logo{font-weight:900;font-size:1.6rem;color:#ffcc00}
+    .logo span{color:#ff3c00}
+    nav button{background:#ff3c00;border:none;padding:10px 20px;border-radius:25px;color:#fff;font-weight:700;cursor:pointer}
+
+    header{height:80vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 20px;background:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,.7)),url('https://images.unsplash.com/photo-1600891963935-1b7b7d4b7c7d?auto=format&fit=crop&w=1700&q=80');background-size:cover;background-position:center}
+    header h1{font-size:3.2rem;color:#ffcc00}
+    header h2{color:#ff3c00;margin:15px 0}
+
+    section{padding:100px 8%;text-align:center}
+    h2{color:#ffcc00;margin-bottom:40px}
+
+    .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:30px}
+    .card{background:#111;padding:20px;border-radius:20px;border:1px solid #222;position:relative}
+    .badge{position:absolute;top:15px;left:15px;background:#ff0000;color:#fff;padding:5px 10px;border-radius:20px;font-size:.7rem;font-weight:700}
+    .card select{width:100%;padding:8px;margin:5px 0;border-radius:8px;border:none}
+    .price{color:#ff3c00;font-weight:bold;margin:10px 0}
+    .card button{background:#ff3c00;border:none;padding:10px 20px;border-radius:25px;color:#fff;font-weight:600;cursor:pointer}
+
+    .cart{position:fixed;right:-400px;top:0;width:350px;height:100%;background:#111;padding:20px;transition:.4s;z-index:2000;border-left:1px solid #222;overflow-y:auto}
+    .cart.active{right:0}
+    .cart h3{text-align:center;margin-bottom:20px;color:#ffcc00}
+    .cart-item{display:flex;justify-content:space-between;margin-bottom:10px;font-size:.9rem}
+    .total{margin-top:20px;font-weight:bold;color:#ff3c00}
+    .checkout{margin-top:20px;width:100%;padding:12px;border:none;border-radius:25px;background:linear-gradient(45deg,#ff3c00,#ff7a00);color:#fff;font-weight:700;cursor:pointer}
+
+    .form-section{margin-top:20px;text-align:left}
+    .form-section input{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:none}
+
+    footer{background:#000;text-align:center;padding:30px;margin-top:50px;border-top:1px solid #222;color:#aaa}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">🍗 Crousty <span>Tenders</span></div>
+  <button onclick="toggleCart()">🛒 Panier (<span id="cart-count">0</span>)</button>
+</nav>
+
+<header>
+  <h1>CROUSTY TENDERS</h1>
+  <h2>🚀 LIVRAISON RAPIDE 7J/7</h2>
+</header>
+
+<section id="menu">
+  <h2>Commander en ligne</h2>
+  <div class="menu">
+
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1612392061785-0c9f2f1f9d19?auto=format&fit=crop&w=1000&q=80">
+      <h3>Tasty Crousti</h3>
+      <div class="price">10€</div>
+      <select id="sauce1"><option>Algérienne</option><option>Samouraï</option><option>Barbecue</option></select>
+      <select id="taille1"><option value="0">Normal</option><option value="2">Maxi +2€</option></select>
+      <button onclick="addCustomToCart('Tasty Crousti',10,'sauce1','taille1')">Ajouter</button>
+    </div>
+
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=1000&q=80">
+      <h3>Pizza Chicken</h3>
+      <div class="price">8€</div>
+      <select id="fromage2"><option value="0">Sans supplément</option><option value="1">Extra fromage +1€</option></select>
+      <button onclick="addCustomToCart('Pizza Chicken',8,null,'fromage2')">Ajouter</button>
+    </div>
+
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1601924582975-7e0b5b6a08d2?auto=format&fit=crop&w=1000&q=80">
+      <h3>Maxi Tacos</h3>
+      <div class="price">15€</div>
+      <button onclick="addToCart('Maxi Tacos',15)">Ajouter</button>
+    </div>
+
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1606755962773-d324e2b6b6b4?auto=format&fit=crop&w=1000&q=80">
+      <div class="badge">OFFRE LIMITÉE</div>
+      <h3>Box 10€ (Burger + 2 Wings + Frites Cheddar Onion + Boisson)</h3>
+      <div class="price">10€</div>
+      <button onclick="addToCart('Box 10€ Nash',10)">Ajouter</button>
+    </div>
+
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=1000&q=80">
+      <h3>Box Tenders 12pcs</h3>
+      <div class="price">17€</div>
+      <button onclick="addToCart('Box Tenders 12pcs',17)">Ajouter</button>
+    </div>
+
+  </div>
+</section>
+
+<div class="cart" id="cart">
+  <h3>Votre Panier</h3>
+  <div id="cart-items"></div>
+  <div class="total">Total: <span id="total">0</span>€</div>
+
+  <div class="form-section">
+    <h4>Informations client</h4>
+    <input type="text" id="name" placeholder="Nom complet">
+    <input type="text" id="address" placeholder="Adresse de livraison">
+    <input type="email" id="email" placeholder="Email">
+  </div>
+
+  <button class="checkout" onclick="checkout()">💳 Payer par carte</button>
+</div>
+
+<footer>
+  © 2026 Crousty Tenders — Boutique officielle 🍗🔥
+</footer>
+
+<script>
+let cart=[];
+const stripe = Stripe("pk_test_REMPLACE_PAR_TA_CLE_PUBLIQUE");
+
+function toggleCart(){document.getElementById('cart').classList.toggle('active')}
+function addToCart(name,price){cart.push({name,price});updateCart();}
+
+function addCustomToCart(name,basePrice,opt1,opt2){
+  let price=basePrice;
+  let options="";
+  if(opt1){const val=document.getElementById(opt1); options+=val.value?val.value+" ":val.options[val.selectedIndex].text;}
+  if(opt2){price+=parseFloat(document.getElementById(opt2).value);}
+  cart.push({name:name+" ("+options+")",price});
+  applyPromo();
+  updateCart();
+}
+
+function applyPromo(){
+  const grouped={};
+  cart.forEach(item=>{grouped[item.name]=(grouped[item.name]||0)+1});
+  for(let name in grouped){
+    if(grouped[name]>=3){
+      let count=0;
+      cart=cart.filter(item=>{if(item.name===name){count++; if(count%3===0)return false;} return true;});
+    }
+  }
+}
+
+function getDeliveryFee(city){
+  if(city.toLowerCase().includes('paris')) return 2;
+  if(city.toLowerCase().includes('boulogne')) return 3;
+  return 5;
+}
+
+function updateCart(){
+  const itemsDiv=document.getElementById('cart-items');
+  const count=document.getElementById('cart-count');
+  const totalSpan=document.getElementById('total');
+  itemsDiv.innerHTML='';
+  let total=0;
+  cart.forEach(item=>{total+=item.price; itemsDiv.innerHTML+=`<div class='cart-item'><span>${item.name}</span><span>${item.price}€</span></div>`;});
+  count.textContent=cart.length;
+  totalSpan.textContent=total;
+}
+
+function generateInvoice(name,address,email,total){
+  return `FACTURE CROUSTY TENDERS\nClient: ${name}\nAdresse: ${address}\nEmail: ${email}\nTotal payé: ${total}€\nMerci pour votre commande 🍗`;
+}
+
+function checkout(){
+  if(cart.length===0){alert('Panier vide');return;}
+  const name=document.getElementById('name').value;
+  const address=document.getElementById('address').value;
+  const email=document.getElementById('email').value;
+  if(!name || !address || !email){alert('Veuillez remplir toutes les informations');return;}
+  let total=cart.reduce((sum,item)=>sum+item.price,0);
+  const fee=getDeliveryFee(address);
+  total+=fee;
+  const invoice=generateInvoice(name,address,email,total);
+  alert(invoice+"\n\nFrais de livraison: "+fee+"€");
+  alert("Étape suivante : créer une session Stripe côté serveur ⚡\n\nPour activer le paiement réel :\n1️⃣ Créer un compte Stripe\n2️⃣ Remplacer la clé publique\n3️⃣ Ajouter un backend (Node.js / PHP) pour créer la session Checkout");
+}
+</script>
+
+</body>
+</html>
